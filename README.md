@@ -13,10 +13,7 @@
 1. Functional Over Imperative Style of Programming(Through expressions)
     
     ```scala
-    def getNumber(a: Int, b: Int): Int {
-        val number = if (a < b) 10 else 5
-        number   
-    }
+    def getNumber(a: Int, b: Int) = if (a < b) 10 else 5
     ```
 
 2. Enables Multiple Inheritance using Traits(Traits are similar to Interfaces in Java)
@@ -74,4 +71,33 @@
 
    ```scala
    def multiplyBy2(number: Int): Int = number * 2
+   ```
+
+## Control Structures
+
+1. if, for, while, do-while
+
+   ```scala
+   val result = for (amount <- amounts) yield amount
+
+   val results = for {
+   amount <- amounts
+   currency <- currencies
+   multiple <- multiples
+   if amount > 10 && amount < 45 && currency == "USD"
+   if multiple >= 2
+   } yield s"$currency ${multiple * amount}"
+   ```
+   
+## Pattern Matching
+
+1. Pattern matching is the act of checking a given sequence of tokens for the presence of the constituents of some pattern.
+
+   ```scala
+   input match {
+      case 50 => println("$50")
+      case 100 => {
+        println("$100")
+      }  
+   }
    ```
