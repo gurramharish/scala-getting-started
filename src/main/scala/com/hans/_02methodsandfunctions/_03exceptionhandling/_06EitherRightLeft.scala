@@ -16,8 +16,8 @@ object _06EitherRightLeft extends App {
   val googStockPrices = List("1367.36", "1360.66", "1394.20", "asdf", "1393.33", "1404.31", "1419.82")
   val stockPricesFloat = googStockPrices.map(convertToFloat)
 
-  stockPricesFloat.foreach{eitherPrice => eitherPrice match {
+  stockPricesFloat.foreach {
     case Right(price) => println(price)
     case Left(message) => println(message)
-  }}
+  }
 }
