@@ -33,15 +33,19 @@ object ValidatingData extends App {
       case (Left(e1), Left(e2)) => Left(e1 ++ e2)
     }
 
-  def parseDates(strings: Seq[String]): Validated[Seq[LocalDate]] =
-    strings.foldLeft[Validated[Seq[LocalDate]]](Right(Vector.empty)) {
-      (validatedDates, str) =>
-        val validatedDate = parseDate(str)
-        validateBoth(validatedDates, validatedDate)
-          .map(dates => dates._1 :+ dates._2)
+
+
+  def validateEach[A, B](as: Seq[A])(validate: A => Validated[B]): Validated[Seq[B]] =
+    as.foldLeft[Validated[Seq[B]]](Right(Vector.empty)) {
+      (validatedBs, a) =>
+        val validatedB: Validated[B] = validate(a)
+        validateBoth(validatedBs, validatedB)
+          .map(tuples => tuples._1 :+ tuples._2)
     }
 
-  parseDates(List("2020-01-04", "2020-10-10", "2022-12-12"))
-  parseDates(List("20"))
+  def parseDates(strings: Seq[String]): Validated[Seq[LocalDate]] =
+    validateEach(strings)(parseDate)
 
+  println(s"1: ${parseDates(List("2020-01-04", "2020-10-10", "2022-12-12"))}")
+  println(s"2: ${parseDates(List("2022-10-02", "2022-20-12", "2011-15-10"))}")
 }
