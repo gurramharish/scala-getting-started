@@ -21,6 +21,13 @@ abstract class MyList[+A] {
 
   def ++[B >: A](list: MyList[B]): MyList[B]
 
+  def foreach(f: A => Unit): Unit
+
+  def sort(compare: (A, A) => Int): MyList[A]
+
+  def zipWith[B, C](list: MyList[B], zip: (A, B) => C): MyList[C]
+
+  def fold[B](start: B)(f: (B, A) => B): B
 
   def printElements: String
 
@@ -48,6 +55,16 @@ case object Empty extends MyList[Nothing] {
   def filter(predicate: Nothing => Boolean): MyList[Nothing] = Empty
 
   def ++[B >: Nothing](list: MyList[B]): MyList[B] = list
+
+  override def foreach(f: Nothing => Unit): Unit = ()
+
+  override def sort(compare: (Nothing, Nothing) => Int): MyList[Nothing] = Empty
+
+  override def zipWith[B, C](list: MyList[B], zip: (Nothing, B) => C): MyList[C] =
+    if(!list.isEmpty) throw new IllegalArgumentException("Lists do not have the same length")
+    else Empty
+
+  override def fold[B](start: B)(f: (B, Nothing) => B): B = start
 }
 
 case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
@@ -67,7 +84,31 @@ case class Cons[+A](h: A, t: MyList[A]) extends MyList[A] {
 
   def map[B](transformer: A => B): MyList[B] = new Cons(transformer(h), t.map(transformer))
 
+  override def foreach(f: A => Unit): Unit = {
+    f(h)
+    t.foreach(f)
+  }
 
+  override def sort(compare: (A, A) => Int): MyList[A] = {
+    def insert(x: A, sortedList: MyList[A]): MyList[A] = {
+      if(sortedList.isEmpty) new Cons(x, Empty)
+      else if(compare(x, sortedList.head) <= 0) new Cons(x, sortedList)
+      else new Cons(sortedList.head, insert(x, sortedList.tail))
+    }
+
+    val sortedTail = t.sort(compare)
+    insert(h, sortedTail)
+
+  }
+
+  override def zipWith[B, C](list: MyList[B], zip: (A, B) => C): MyList[C] =
+    if(list.isEmpty) throw new IllegalArgumentException("Lists do not have same length")
+    else new Cons[C](zip(h, list.head), t.zipWith(list.tail, zip))
+
+  override def fold[B](start: B)(f: (B, A) => B): B = {
+    val newStart = f(start, h)
+    t.fold(newStart)(f)
+  }
 
   def ++[B >: A](list: MyList[B]): MyList[B] = new Cons[B](h, t ++ list)
 
@@ -95,4 +136,16 @@ object ListTest extends App {
   println(list.flatMap{ value =>
     new Cons[Int](value, new Cons(value + 1, Empty))
   }.toString)
+
+  list.foreach(i => println(s"Hello: $i"))
+
+  val unsortedList = new Cons[Int](11, new Cons[Int](1, new Cons[Int](3, Empty)))
+  println(unsortedList.sort((a, b) => b - a))
+
+  println(unsortedList.zipWith[Int, String](list, _ + "-" + _))
+
+  // Fold
+  println(unsortedList.fold(10){(s, i) => s + i})
+  println(unsortedList.fold(10)(_ + _))
+
 }
